@@ -1,21 +1,62 @@
-﻿// NeuroNet.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-
-#include "pch.h"
+﻿#include "pch.h"
+#include <fstream>
 #include <iostream>
+#include <vector>
+
+using namespace std;
+int ReverseInt(int i)
+{
+    unsigned char ch1, ch2, ch3, ch4;
+    ch1 = i & 255;
+    ch2 = (i >> 8) & 255;
+    ch3 = (i >> 16) & 255;
+    ch4 = (i >> 24) & 255;
+    return ((int)ch1 << 24) + ((int)ch2 << 16) + ((int)ch3 << 8) + ch4;
+}
+void ReadMNIST(int NumberOfImages, int DataOfAnImage, vector<vector<double>>& arr)
+{
+    arr.resize(NumberOfImages, vector<double>(DataOfAnImage));
+    ifstream file("C:\\Users\\shrek\\Desktop\\t10k-images.idx3-ubyte", ios::binary);
+    if (file.is_open()) {
+        int magic_number = 0;
+        int number_of_images = 0;
+        int n_rows = 0;
+        int n_cols = 0;
+        file.read((char*)&magic_number, sizeof(magic_number));
+        magic_number = ReverseInt(magic_number);
+        file.read((char*)&number_of_images, sizeof(number_of_images));
+        number_of_images = ReverseInt(number_of_images);
+        file.read((char*)&n_rows, sizeof(n_rows));
+        n_rows = ReverseInt(n_rows);
+        file.read((char*)&n_cols, sizeof(n_cols));
+        n_cols = ReverseInt(n_cols);
+        for (int i = 0; i < number_of_images; ++i) {
+            for (int r = 0; r < n_rows; ++r) {
+                for (int c = 0; c < n_cols; ++c) {
+                    unsigned char temp = 0;
+                    file.read((char*)&temp, sizeof(temp));
+                    arr[i][(n_rows * r) + c] = (double)temp;
+                }
+            }
+        }
+    }
+}
 
 int main()
 {
-    std::cout << "Hello World!\n"; 
+    vector<vector<double>> ar;
+    ReadMNIST(10000, 784, ar);
+
+    for (int i = 0; i < 100; i++) {
+        for (int j = 0; j < 28; j++) {
+            for (int c = 0; c < 28; c++) {
+
+                cout.width(3);
+                cout << ar[i][28*j + c];
+            }
+            cout << endl;
+        }
+    }
+
+    return 0;
 }
-
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
